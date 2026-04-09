@@ -31,7 +31,7 @@ def run_pipeline_endpoint(request: PipelineRunRequest) -> PipelineRunResponse:
     """
     # Validate and build all steps up front — fail fast before processing any text
     try:
-        steps = [build_step(s) for s in request.steps]
+        [build_step(s) for s in request.steps]
     except (KeyError, ValueError) as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 

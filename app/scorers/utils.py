@@ -9,7 +9,6 @@ from __future__ import annotations
 
 import os
 from functools import lru_cache
-from typing import List
 
 import numpy as np
 
@@ -36,7 +35,7 @@ def embed_one(text: str) -> np.ndarray:
     return result[0]
 
 
-def embed(texts: List[str]) -> np.ndarray:
+def embed(texts: list[str]) -> np.ndarray:
     """Return L2-normalised embeddings for a list of strings.
 
     Uses per-text LRU cache: cache hits skip model inference entirely.

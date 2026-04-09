@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-from typing import Optional
 
 
 class QualityScorer(ABC):
@@ -14,7 +13,7 @@ class QualityScorer(ABC):
     weight: float = 1.0
 
     @abstractmethod
-    def score(self, text: str, context: Optional[str] = None) -> float:
+    def score(self, text: str, context: str | None = None) -> float:
         """Compute a quality score between 0.0 (lowest) and 1.0 (highest)."""
         ...
 

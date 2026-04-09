@@ -1,6 +1,5 @@
 from fastapi import APIRouter, HTTPException
 
-from app.core.config import settings
 from app.models.request import FilterRequest
 from app.models.response import FilterItem, FilterResponse, FilterSummary, ScoreResult
 from app.scorers.registry import get_scorer

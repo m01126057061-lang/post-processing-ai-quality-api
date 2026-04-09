@@ -13,7 +13,6 @@ No-context behaviour:
   - The response schema includes a "context_provided" flag so API consumers can
     distinguish real scores from neutral fallbacks.
 """
-from typing import Optional
 
 from app.scorers.base import QualityScorer
 from app.scorers.utils import embed_one, norm_sim_to_score
@@ -30,7 +29,7 @@ class RelevanceScorer(QualityScorer):
     weight = 1.0
     requires_context: bool = True  # meaningful score requires a context string
 
-    def score(self, text: str, context: Optional[str] = None) -> float:
+    def score(self, text: str, context: str | None = None) -> float:
         if not context or not context.strip():
             # Documented neutral sentinel — not a real relevance measurement.
             # Check requires_context before interpreting this value.

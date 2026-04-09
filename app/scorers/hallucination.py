@@ -20,7 +20,6 @@ from __future__ import annotations
 
 import logging
 from functools import lru_cache
-from typing import Optional
 
 import numpy as np
 
@@ -61,7 +60,7 @@ class HallucinationScorer(QualityScorer):
     weight = 1.0
     requires_context: bool = True
 
-    def score(self, text: str, context: Optional[str] = None) -> float:
+    def score(self, text: str, context: str | None = None) -> float:
         if not context or not context.strip():
             logger.warning(
                 "HallucinationScorer.score() called without context — "

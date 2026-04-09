@@ -3,7 +3,6 @@ FilterStep — marks items as filtered when their overall score falls below a th
 
 Items already filtered by a prior step are skipped.
 """
-from typing import Optional
 
 from app.pipeline.item import PipelineItem
 
@@ -14,7 +13,7 @@ class FilterStep:
     def __init__(self, threshold: float) -> None:
         self.threshold = threshold
 
-    def run(self, items: list[PipelineItem], context: Optional[str] = None) -> list[PipelineItem]:
+    def run(self, items: list[PipelineItem], context: str | None = None) -> list[PipelineItem]:
         for item in items:
             if item.filtered:
                 continue

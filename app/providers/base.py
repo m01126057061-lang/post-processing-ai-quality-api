@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-from typing import List
 
 
 class ModelProviderAdapter(ABC):
@@ -16,7 +15,7 @@ class ModelProviderAdapter(ABC):
         ...
 
     @abstractmethod
-    def embed(self, text: str) -> List[float]:
+    def embed(self, text: str) -> list[float]:
         """Return a vector embedding for the given text."""
         ...
 

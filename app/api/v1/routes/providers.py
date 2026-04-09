@@ -5,7 +5,6 @@ GET  /api/v1/providers               — list all registered providers and their
 POST /api/v1/providers/evaluate      — LLM-based quality evaluation using a chosen provider
 """
 import time
-from typing import Annotated
 
 from fastapi import APIRouter
 

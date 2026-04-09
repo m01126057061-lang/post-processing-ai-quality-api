@@ -6,7 +6,6 @@ Supported operations:
   - lowercase : convert to lowercase
   - truncate  : trim to max_chars characters
 """
-from typing import Optional
 
 from app.pipeline.item import PipelineItem
 
@@ -14,11 +13,11 @@ from app.pipeline.item import PipelineItem
 class TransformStep:
     name = "transform"
 
-    def __init__(self, operation: str = "strip", max_chars: Optional[int] = None) -> None:
+    def __init__(self, operation: str = "strip", max_chars: int | None = None) -> None:
         self.operation = operation
         self.max_chars = max_chars
 
-    def run(self, items: list[PipelineItem], context: Optional[str] = None) -> list[PipelineItem]:
+    def run(self, items: list[PipelineItem], context: str | None = None) -> list[PipelineItem]:
         for item in items:
             if item.filtered:
                 continue

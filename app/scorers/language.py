@@ -27,7 +27,7 @@ def detect_language(text: str) -> str:
     Falls back to "en" on any detection error.
     """
     try:
-        from langdetect import detect, LangDetectException  # type: ignore
+        from langdetect import detect  # type: ignore
         return detect(text)
     except Exception as exc:
         logger.debug("Language detection failed (%s); defaulting to 'en'.", exc)

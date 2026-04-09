@@ -13,7 +13,6 @@ from __future__ import annotations
 
 import logging
 from functools import lru_cache
-from typing import Optional
 
 from app.scorers.base import QualityScorer
 
@@ -57,7 +56,7 @@ class ToxicityScorer(QualityScorer):
         "identity_attack",
     )
 
-    def score(self, text: str, context: Optional[str] = None) -> float:
+    def score(self, text: str, context: str | None = None) -> float:
         if not text or not text.strip():
             return 1.0  # empty text is trivially non-toxic
 

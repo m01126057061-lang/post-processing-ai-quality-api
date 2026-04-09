@@ -17,7 +17,6 @@ from __future__ import annotations
 
 import re
 from collections import Counter
-from typing import Optional
 
 from app.scorers.base import QualityScorer
 
@@ -54,7 +53,7 @@ class FluencyScorer(QualityScorer):
     name = "fluency"
     weight = 1.0
 
-    def score(self, text: str, context: Optional[str] = None) -> float:
+    def score(self, text: str, context: str | None = None) -> float:
         if not text or not text.strip():
             return 0.0
 

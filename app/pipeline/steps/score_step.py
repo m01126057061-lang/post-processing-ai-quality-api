@@ -3,7 +3,6 @@ ScoreStep — evaluates quality metrics for each non-filtered PipelineItem.
 
 Metrics are validated eagerly at construction time (fail fast if unknown).
 """
-from typing import Optional
 
 from app.pipeline.item import PipelineItem
 from app.scorers.registry import get_scorer
@@ -18,7 +17,7 @@ class ScoreStep:
             get_scorer(m)
         self.metrics = metrics
 
-    def run(self, items: list[PipelineItem], context: Optional[str] = None) -> list[PipelineItem]:
+    def run(self, items: list[PipelineItem], context: str | None = None) -> list[PipelineItem]:
         for item in items:
             if item.filtered:
                 continue

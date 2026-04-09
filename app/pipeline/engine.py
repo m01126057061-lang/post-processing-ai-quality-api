@@ -2,7 +2,6 @@
 Pipeline engine: build concrete steps from config objects, run them in order,
 and package results into a PipelineRunResponse.
 """
-from typing import Optional
 
 from app.models.request import PipelineStepConfig
 from app.models.response import (
@@ -33,7 +32,7 @@ def build_step(config: PipelineStepConfig):
 
 def run_pipeline(
     texts: list[str],
-    context: Optional[str],
+    context: str | None,
     steps: list[PipelineStepConfig],
 ) -> PipelineRunResponse:
     """Execute a list of pipeline steps over all input texts and return the full result."""
