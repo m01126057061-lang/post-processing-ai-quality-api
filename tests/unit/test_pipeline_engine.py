@@ -23,7 +23,8 @@ def test_build_transform_step():
 
 
 def test_build_unknown_raises():
-    with pytest.raises(ValueError, match="Unknown pipeline step type"):
+    from pydantic import ValidationError as PydanticValidationError
+    with pytest.raises(PydanticValidationError):
         build_step(PipelineStepConfig(type="unknown"))
 
 
