@@ -1,0 +1,23 @@
+# Web framework
+fastapi>=0.110.0
+uvicorn[standard]>=0.29.0
+
+# Validation & settings
+pydantic>=2.6.0
+pydantic-settings>=2.2.0
+
+# HTTP client (provider adapters)
+httpx>=0.27.0
+
+# Environment
+python-dotenv>=1.0.0
+
+# Testing
+pytest>=8.1.0
+pytest-asyncio>=0.23.0
+httpx>=0.27.0
+
+# Quality / NLP (uncomment as scorers are implemented)
+# sentence-transformers>=2.7.0
+# detoxify>=0.5.2
+# evaluate>=0.4.1
