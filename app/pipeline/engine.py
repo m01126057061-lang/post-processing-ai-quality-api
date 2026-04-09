@@ -3,8 +3,6 @@ Pipeline engine: build concrete steps from config objects, run them in order,
 and package results into a PipelineRunResponse.
 """
 
-from app.pipeline.item import PipelineItem
-
 from app.models.request import PipelineStepConfig
 from app.models.response import (
     PipelineRunResponse,
@@ -12,6 +10,7 @@ from app.models.response import (
     PipelineTextResult,
     ScoreResult,
 )
+from app.pipeline.item import PipelineItem
 from app.pipeline.steps.filter_step import FilterStep
 from app.pipeline.steps.score_step import ScoreStep
 from app.pipeline.steps.transform_step import TransformStep
