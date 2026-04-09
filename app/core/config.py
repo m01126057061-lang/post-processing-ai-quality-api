@@ -22,6 +22,9 @@ class Settings(BaseSettings):
     # ── Embedding model (used by coherence/fluency/relevance scorers) ─────────
     embedding_model: str = "sentence-transformers/all-MiniLM-L6-v2"
 
+    # ── Embedding cache size (per-text LRU, entries) ──────────────────────────
+    embedding_cache_size: int = 512
+
     # ── OpenAI ───────────────────────────────────────────────────────────────
     openai_api_key: Optional[str] = None
     openai_default_model: str = "gpt-4o-mini"
@@ -37,6 +40,16 @@ class Settings(BaseSettings):
     # ── Provider call settings ─────────────────────────────────────────────────
     provider_timeout_seconds: float = 30.0
     provider_max_retries: int = 2
+
+    # ── Rate limits (requests per 60s per IP) ─────────────────────────────────
+    rate_limit_evaluate: int = 60
+    rate_limit_filter: int = 30
+    rate_limit_pipeline: int = 30
+    rate_limit_providers: int = 20
+
+    # ── Audit trail ───────────────────────────────────────────────────────────
+    db_path: str = "./data/quality_audit.db"
+    audit_enabled: bool = True
 
 
 settings = Settings()
