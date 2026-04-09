@@ -114,7 +114,7 @@ class TestFluencyScorer:
 
 class TestRegistry:
     def test_available_metrics(self):
-        assert set(available_metrics()) == {"coherence", "relevance", "fluency"}
+        assert set(available_metrics()) == {"coherence", "relevance", "fluency", "toxicity", "hallucination"}
 
     def test_get_coherence(self):
         assert get_scorer("coherence").name == "coherence"
@@ -127,7 +127,7 @@ class TestRegistry:
 
     def test_unknown_raises_key_error(self):
         with pytest.raises(KeyError, match="Unknown metric"):
-            get_scorer("toxicity")
+            get_scorer("nonexistent_metric")
 
     def test_singleton(self):
         assert get_scorer("coherence") is get_scorer("coherence")
