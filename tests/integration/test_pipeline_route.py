@@ -1,5 +1,4 @@
 """Integration tests for POST /api/v1/pipeline/run."""
-import pytest
 from fastapi.testclient import TestClient
 from app.main import app
 

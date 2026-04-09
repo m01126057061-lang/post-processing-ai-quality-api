@@ -1,5 +1,4 @@
 """Integration tests for /api/v1/providers endpoints."""
-import pytest
 from fastapi.testclient import TestClient
 
 from app.main import app
