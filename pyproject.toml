@@ -1,0 +1,14 @@
+[tool.coverage.run]
+source = ["app"]
+omit = [
+    "app/__init__.py",
+    "app/*/\__init__.py",
+]
+
+[tool.coverage.report]
+show_missing = true
+skip_empty = true
+fail_under = 70
+
+[tool.coverage.html]
+directory = "htmlcov"
