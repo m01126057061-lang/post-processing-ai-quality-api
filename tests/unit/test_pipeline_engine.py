@@ -1,13 +1,12 @@
 """Unit tests for the pipeline engine: build_step factory and run_pipeline."""
 import pytest
+from app.pipeline.item import PipelineItem
 
 from app.models.request import PipelineStepConfig
 from app.pipeline.engine import build_step, run_pipeline
-from app.pipeline.item import PipelineItem
 from app.pipeline.steps.filter_step import FilterStep
 from app.pipeline.steps.score_step import ScoreStep
 from app.pipeline.steps.transform_step import TransformStep
-
 
 # ── build_step ────────────────────────────────────────────────────────────────
 

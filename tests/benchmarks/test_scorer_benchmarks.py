@@ -6,6 +6,7 @@ ML embed is mocked — these measure Python/Pydantic/dispatcher overhead.
 """
 import pytest
 from fastapi.testclient import TestClient
+
 from app.main import app
 from app.scorers.coherence import CoherenceScorer
 from app.scorers.fluency import FluencyScorer

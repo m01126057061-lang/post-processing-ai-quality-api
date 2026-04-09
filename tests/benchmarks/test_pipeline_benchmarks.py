@@ -4,6 +4,7 @@ Run: pytest tests/benchmarks/ --benchmark-only
 """
 import pytest
 from fastapi.testclient import TestClient
+
 from app.main import app
 from app.models.request import PipelineStepConfig
 from app.pipeline.engine import run_pipeline

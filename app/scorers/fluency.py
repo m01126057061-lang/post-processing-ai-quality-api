@@ -27,7 +27,7 @@ except ImportError:
     _TEXTSTAT_AVAILABLE = False
 
 try:
-    from app.scorers.language import detect_language, is_latin_script, is_agglutinative
+    from app.scorers.language import detect_language, is_agglutinative, is_latin_script
     _LANGDETECT_AVAILABLE = True
 except ImportError:
     _LANGDETECT_AVAILABLE = False

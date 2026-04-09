@@ -3,9 +3,8 @@ import pytest
 
 from app.scorers.coherence import CoherenceScorer, split_sentences
 from app.scorers.fluency import FluencyScorer
-from app.scorers.relevance import RelevanceScorer
 from app.scorers.registry import available_metrics, get_scorer
-
+from app.scorers.relevance import RelevanceScorer
 
 # ── split_sentences ────────────────────────────────────────────────────────────
 

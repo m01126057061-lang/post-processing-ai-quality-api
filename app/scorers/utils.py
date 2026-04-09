@@ -19,6 +19,7 @@ _CACHE_SIZE = int(os.getenv("EMBEDDING_CACHE_SIZE", "512"))
 def get_embedding_model():
     """Lazy-load and cache the sentence-transformers model (loaded once per process)."""
     from sentence_transformers import SentenceTransformer
+
     from app.core.config import settings
     return SentenceTransformer(settings.embedding_model)
 

@@ -1,5 +1,6 @@
 """Integration tests for error handling, middleware, and response envelopes."""
 from fastapi.testclient import TestClient
+
 from app.main import app
 
 client = TestClient(app)

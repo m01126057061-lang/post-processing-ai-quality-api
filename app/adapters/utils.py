@@ -5,6 +5,7 @@ parse_score_response — extract quality scores from an LLM text response.
   Strategy: JSON parse first; regex extraction fallback.
   All scores are clamped to [0.0, 1.0].
 """
+import contextlib
 import json
 import re
 
@@ -40,10 +41,8 @@ def parse_score_response(
         reasoning = str(data.get("reasoning", ""))
         for c in criteria:
             if c in data:
-                try:
+                with contextlib.suppress(ValueError, TypeError):
                     scores[c] = max(0.0, min(1.0, float(data[c])))
-                except (ValueError, TypeError):
-                    pass
         return scores, reasoning
     except (json.JSONDecodeError, AttributeError):
         pass
@@ -53,10 +52,8 @@ def parse_score_response(
         pattern = rf'["\'\']?{re.escape(c)}["\'\']?\s*:\s*([0-9]*\.?[0-9]+)'
         m = re.search(pattern, text)
         if m:
-            try:
+            with contextlib.suppress(ValueError):
                 scores[c] = max(0.0, min(1.0, float(m.group(1))))
-            except ValueError:
-                pass
 
     rm = re.search(r'["\'\']?reasoning["\'\']?\s*:\s*["\'\']([^"\'\']*)["\'\'\']', text)
     if rm:

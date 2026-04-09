@@ -5,7 +5,7 @@ from typing import Literal
 
 from pydantic import BaseModel, field_validator
 
-from app.models.request import _validate_text, _validate_metrics
+from app.models.request import _validate_metrics, _validate_text
 
 
 class ProviderEvaluateRequest(BaseModel):

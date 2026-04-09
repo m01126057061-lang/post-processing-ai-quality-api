@@ -1,5 +1,6 @@
 """Integration tests for POST /api/v1/pipeline/run."""
 from fastapi.testclient import TestClient
+
 from app.main import app
 
 client = TestClient(app)

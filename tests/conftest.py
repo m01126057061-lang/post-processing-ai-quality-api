@@ -3,6 +3,8 @@
 ``mock_embed`` (autouse) patches every embed() call so no sentence-transformer
 model is loaded during the test run.
 """
+import contextlib
+
 import numpy as np
 import pytest
 from fastapi.testclient import TestClient
@@ -35,10 +37,8 @@ def mock_embed(monkeypatch):
         "app.scorers.coherence.embed",
         "app.scorers.relevance.embed",
     ):
-        try:
+        with contextlib.suppress(AttributeError):
             monkeypatch.setattr(target, _fake_embed)
-        except AttributeError:
-            pass
     return _fake_embed
 
 

@@ -3,14 +3,14 @@ Post-Processing AI Quality API — application entry point.
 """
 from contextlib import asynccontextmanager
 
+from app.core.middleware import RequestIDMiddleware
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.v1.routes import evaluate, filter_route, pipeline, health, providers
+from app.api.v1.routes import evaluate, filter_route, health, pipeline, providers
 from app.api.v1.routes.history import router as history_router
 from app.core.config import settings
 from app.core.error_handlers import register_exception_handlers
-from app.core.middleware import RequestIDMiddleware
 from app.core.rate_limit import RateLimitMiddleware
 from app.db import init_db
 

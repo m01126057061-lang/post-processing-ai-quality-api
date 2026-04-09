@@ -4,7 +4,6 @@ Response models for all API endpoints.
 
 from pydantic import BaseModel
 
-
 # ── Shared ─────────────────────────────────────────────────────────────────
 
 class ScoreResult(BaseModel):
