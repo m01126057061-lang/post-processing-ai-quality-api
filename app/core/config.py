@@ -50,5 +50,8 @@ class Settings(BaseSettings):
     db_path: str = "./data/quality_audit.db"
     audit_enabled: bool = True
 
+    # ── Quality threshold (output "passed" if overall >= this value) ──────────
+    default_quality_threshold: float = 0.7
+
 
 settings = Settings()
