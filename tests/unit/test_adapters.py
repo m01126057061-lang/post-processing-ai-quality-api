@@ -1,5 +1,6 @@
 """Unit tests for adapter implementations and the adapter registry."""
 import pytest
+
 from app.adapters.anthropic_adapter import AnthropicAdapter
 from app.adapters.mock_adapter import MockAdapter
 from app.adapters.openai_adapter import OpenAIAdapter
