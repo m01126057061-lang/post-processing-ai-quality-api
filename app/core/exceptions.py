@@ -11,14 +11,17 @@ Hierarchy:
   ├── BatchTooLargeError        — texts list exceeds MAX_BATCH_SIZE
   ├── TextTooLongError          — a single text exceeds MAX_TEXT_LENGTH
   ├── BlankTextError            — a text is empty or whitespace-only
-  └── InvalidPipelineError      — pipeline step configuration is logically invalid
-      └── FilterBeforeScoreError — filter step has no prior score step to act on
+  ├── InvalidPipelineError      — pipeline step configuration is logically invalid
+  │   └── FilterBeforeScoreError
+  ├── UnknownProviderError      — requested provider is not registered
+  ├── ProviderNotAvailableError — provider API key is not configured (HTTP 503)
+  └── ProviderCallError         — provider API call failed (HTTP 502)
 """
 from typing import Optional
 
 
 class QualityAPIError(Exception):
-    """Base class for all domain errors.  Maps to HTTP 400 by default."""
+    """Base class for all domain errors. Maps to HTTP 400 by default."""
     http_status: int = 400
     error_code: str = "quality_api_error"
 
@@ -28,31 +31,34 @@ class QualityAPIError(Exception):
         self.details: list[dict] = details or []
 
 
+# ── Metric / text validation errors ──────────────────────────────────────────
+
 class UnknownMetricError(QualityAPIError):
-    """One or more requested metrics are not registered."""
     error_code = "unknown_metric"
 
     def __init__(self, unknown: list[str], available: list[str]) -> None:
         super().__init__(
             message=f"Unknown metric(s): {unknown}. Available: {sorted(available)}",
-            details=[{"field": "metrics", "message": f"{m!r} is not a registered scorer"} for m in unknown],
+            details=[
+                {"field": "metrics", "message": f"{m!r} is not a registered scorer"}
+                for m in unknown
+            ],
         )
         self.unknown = unknown
         self.available = available
 
 
 class EmptyBatchError(QualityAPIError):
-    """texts list must contain at least one item."""
     error_code = "empty_batch"
 
     def __init__(self) -> None:
-        super().__init__(message="texts must contain at least one item.", details=[
-            {"field": "texts", "message": "batch must not be empty"},
-        ])
+        super().__init__(
+            message="texts must contain at least one item.",
+            details=[{"field": "texts", "message": "batch must not be empty"}],
+        )
 
 
 class BatchTooLargeError(QualityAPIError):
-    """texts list exceeds the configured maximum batch size."""
     error_code = "batch_too_large"
 
     def __init__(self, received: int, max_size: int) -> None:
@@ -63,7 +69,6 @@ class BatchTooLargeError(QualityAPIError):
 
 
 class TextTooLongError(QualityAPIError):
-    """A single text item exceeds the maximum allowed character length."""
     error_code = "text_too_long"
 
     def __init__(self, index: Optional[int], length: int, max_length: int) -> None:
@@ -75,7 +80,6 @@ class TextTooLongError(QualityAPIError):
 
 
 class BlankTextError(QualityAPIError):
-    """A text item is empty or contains only whitespace."""
     error_code = "blank_text"
 
     def __init__(self, index: Optional[int] = None) -> None:
@@ -86,13 +90,13 @@ class BlankTextError(QualityAPIError):
         )
 
 
+# ── Pipeline errors ───────────────────────────────────────────────────────────
+
 class InvalidPipelineError(QualityAPIError):
-    """General pipeline configuration error."""
     error_code = "invalid_pipeline"
 
 
 class FilterBeforeScoreError(InvalidPipelineError):
-    """A filter step appears before any score step — overall will always be 0.0."""
     error_code = "filter_before_score"
 
     def __init__(self) -> None:
@@ -104,3 +108,51 @@ class FilterBeforeScoreError(InvalidPipelineError):
             ),
             details=[{"field": "steps", "message": "filter step has no prior score step"}],
         )
+
+
+# ── Provider errors ───────────────────────────────────────────────────────────
+
+class UnknownProviderError(QualityAPIError):
+    """Requested provider slug is not registered."""
+    error_code = "unknown_provider"
+
+    def __init__(self, provider: str, available: list[str]) -> None:
+        super().__init__(
+            message=f"Unknown provider {provider!r}. Available: {sorted(available)}",
+            details=[{"field": "provider", "message": f"{provider!r} is not registered"}],
+        )
+        self.provider = provider
+        self.available = available
+
+
+class ProviderNotAvailableError(QualityAPIError):
+    """Provider is registered but its API key / credentials are not configured."""
+    http_status = 503
+    error_code = "provider_not_available"
+
+    def __init__(self, provider: str) -> None:
+        super().__init__(
+            message=(
+                f"Provider {provider!r} is not configured. "
+                "Set the required API key in your environment variables."
+            ),
+            details=[{
+                "field": "provider",
+                "message": f"{provider!r} requires an API key that is not set",
+            }],
+        )
+        self.provider = provider
+
+
+class ProviderCallError(QualityAPIError):
+    """Provider API call failed (network error, rate limit, invalid response, etc.)."""
+    http_status = 502
+    error_code = "provider_call_failed"
+
+    def __init__(self, provider: str, reason: str) -> None:
+        super().__init__(
+            message=f"Call to {provider!r} provider failed: {reason}",
+            details=[{"field": None, "message": reason}],
+        )
+        self.provider = provider
+        self.reason = reason
