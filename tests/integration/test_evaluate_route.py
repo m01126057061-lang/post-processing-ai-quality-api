@@ -64,7 +64,7 @@ def test_evaluate_empty_metrics_422():
 
 
 def test_evaluate_unknown_metric_error():
-    resp = client.post("/api/v1/evaluate", json={"text": "Valid.", "metrics": ["toxicity"]})
+    resp = client.post("/api/v1/evaluate", json={"text": "Valid.", "metrics": ["nonexistent_metric"]})
     assert resp.status_code in (400, 422)
 
 
