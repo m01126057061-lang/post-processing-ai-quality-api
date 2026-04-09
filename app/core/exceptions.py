@@ -17,7 +17,6 @@ Hierarchy:
   ├── ProviderNotAvailableError — provider API key is not configured (HTTP 503)
   └── ProviderCallError         — provider API call failed (HTTP 502)
 """
-from typing import Optional
 
 
 class QualityAPIError(Exception):
@@ -25,7 +24,7 @@ class QualityAPIError(Exception):
     http_status: int = 400
     error_code: str = "quality_api_error"
 
-    def __init__(self, message: str, details: Optional[list[dict]] = None) -> None:
+    def __init__(self, message: str, details: list[dict] | None = None) -> None:
         super().__init__(message)
         self.message = message
         self.details: list[dict] = details or []
@@ -71,7 +70,7 @@ class BatchTooLargeError(QualityAPIError):
 class TextTooLongError(QualityAPIError):
     error_code = "text_too_long"
 
-    def __init__(self, index: Optional[int], length: int, max_length: int) -> None:
+    def __init__(self, index: int | None, length: int, max_length: int) -> None:
         field = f"texts[{index}]" if index is not None else "text"
         super().__init__(
             message=f"Text at {field} has {length} characters; maximum is {max_length}.",
@@ -82,7 +81,7 @@ class TextTooLongError(QualityAPIError):
 class BlankTextError(QualityAPIError):
     error_code = "blank_text"
 
-    def __init__(self, index: Optional[int] = None) -> None:
+    def __init__(self, index: int | None = None) -> None:
         field = f"texts[{index}]" if index is not None else "text"
         super().__init__(
             message=f"{field} must not be blank.",

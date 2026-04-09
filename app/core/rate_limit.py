@@ -14,7 +14,6 @@ from __future__ import annotations
 import os
 import time
 from collections import defaultdict
-from typing import Dict, Tuple
 
 from fastapi import Request
 from fastapi.responses import JSONResponse
@@ -29,7 +28,7 @@ def _int_env(name: str, default: int) -> int:
 
 
 # (max_requests, window_seconds)
-_LIMITS: Dict[str, Tuple[int, int]] = {
+_LIMITS: dict[str, tuple[int, int]] = {
     "/api/v1/evaluate":           (_int_env("RATE_LIMIT_EVALUATE", 60),  60),
     "/api/v1/filter":             (_int_env("RATE_LIMIT_FILTER", 30),    60),
     "/api/v1/pipeline/run":       (_int_env("RATE_LIMIT_PIPELINE", 30),  60),
@@ -43,7 +42,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
     def __init__(self, app) -> None:
         super().__init__(app)
         # store: key → list of timestamps within the window
-        self._store: Dict[str, list] = defaultdict(list)
+        self._store: dict[str, list] = defaultdict(list)
 
     async def dispatch(self, request: Request, call_next):
         path = request.url.path

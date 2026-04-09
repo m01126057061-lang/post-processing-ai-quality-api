@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List
+from typing import Any
 
 
 class PipelineStep(ABC):
@@ -11,7 +11,7 @@ class PipelineStep(ABC):
     name: str = "base_step"
 
     @abstractmethod
-    def process(self, payload: Dict[str, Any]) -> Dict[str, Any]:
+    def process(self, payload: dict[str, Any]) -> dict[str, Any]:
         """Process the payload and return the (possibly mutated) payload."""
         ...
 
@@ -25,14 +25,14 @@ class Pipeline:
     Steps are executed sequentially; each step output is the next step input.
     """
 
-    def __init__(self, steps: List[PipelineStep] = None):
-        self.steps: List[PipelineStep] = steps or []
+    def __init__(self, steps: list[PipelineStep] = None):
+        self.steps: list[PipelineStep] = steps or []
 
     def add_step(self, step: PipelineStep) -> "Pipeline":
         self.steps.append(step)
         return self
 
-    def run(self, payload: Dict[str, Any]) -> Dict[str, Any]:
+    def run(self, payload: dict[str, Any]) -> dict[str, Any]:
         for step in self.steps:
             payload = step.process(payload)
         return payload

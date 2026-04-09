@@ -8,7 +8,6 @@ Strategy:
   - Map to [0, 1]; single-sentence inputs score 1.0 (trivially coherent).
 """
 import re
-from typing import Optional, List
 
 import numpy as np
 
@@ -16,7 +15,7 @@ from app.scorers.base import QualityScorer
 from app.scorers.utils import embed, norm_sim_to_score
 
 
-def split_sentences(text: str) -> List[str]:
+def split_sentences(text: str) -> list[str]:
     """Split text into non-empty sentences on terminal punctuation."""
     parts = re.split(r"(?<=[.!?])\s+", text.strip())
     return [p for p in parts if p.strip()]
@@ -28,7 +27,7 @@ class CoherenceScorer(QualityScorer):
     name = "coherence"
     weight = 1.0
 
-    def score(self, text: str, context: Optional[str] = None) -> float:
+    def score(self, text: str, context: str | None = None) -> float:
         sentences = split_sentences(text)
         if len(sentences) <= 1:
             return 1.0

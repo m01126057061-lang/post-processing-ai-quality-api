@@ -11,7 +11,6 @@ Adapters are instantiated per-request via registry.get_adapter(); they must be
 lightweight to construct (no heavy I/O in __init__).
 """
 from abc import ABC, abstractmethod
-from typing import Optional
 
 
 class ModelProviderAdapter(ABC):
@@ -36,7 +35,7 @@ class ModelProviderAdapter(ABC):
     async def complete(
         self,
         prompt: str,
-        model: Optional[str] = None,
+        model: str | None = None,
         **kwargs,
     ) -> str:
         """Send a raw prompt and return the model's text completion."""
@@ -45,9 +44,9 @@ class ModelProviderAdapter(ABC):
     async def score_quality(
         self,
         text: str,
-        context: Optional[str],
+        context: str | None,
         criteria: list[str],
-        model: Optional[str] = None,
+        model: str | None = None,
     ) -> tuple[dict[str, float], str]:
         """
         Use the LLM to score the quality of *text* on each criterion.

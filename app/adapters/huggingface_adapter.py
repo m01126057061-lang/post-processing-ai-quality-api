@@ -3,7 +3,6 @@ HuggingFace Inference API adapter.
 Requires env var: HUGGINGFACE_API_KEY
 """
 import asyncio
-from typing import Optional
 
 from app.adapters.base import ModelProviderAdapter
 from app.adapters.prompts import QUALITY_SCORE_SYSTEM
@@ -29,7 +28,7 @@ class HuggingFaceAdapter(ModelProviderAdapter):
     def is_available(self) -> bool:
         return bool(settings.huggingface_api_key)
 
-    def _get_client(self, model: Optional[str] = None):
+    def _get_client(self, model: str | None = None):
         from huggingface_hub import InferenceClient  # noqa: PLC0415
         return InferenceClient(
             model=model or self.default_model,
@@ -40,7 +39,7 @@ class HuggingFaceAdapter(ModelProviderAdapter):
     async def complete(
         self,
         prompt: str,
-        model: Optional[str] = None,
+        model: str | None = None,
         **kwargs,
     ) -> str:
         try:
@@ -61,9 +60,9 @@ class HuggingFaceAdapter(ModelProviderAdapter):
     async def score_quality(
         self,
         text: str,
-        context: Optional[str],
+        context: str | None,
         criteria: list[str],
-        model: Optional[str] = None,
+        model: str | None = None,
     ) -> tuple[dict[str, float], str]:
         user_msg = build_scoring_prompt(text, context, criteria)
         full_prompt = _INSTRUCT_TEMPLATE.format(

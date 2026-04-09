@@ -2,7 +2,6 @@
 Anthropic model provider adapter.
 Requires env var: ANTHROPIC_API_KEY
 """
-from typing import Optional
 
 from app.adapters.base import ModelProviderAdapter
 from app.adapters.prompts import QUALITY_SCORE_SYSTEM
@@ -37,7 +36,7 @@ class AnthropicAdapter(ModelProviderAdapter):
     async def complete(
         self,
         prompt: str,
-        model: Optional[str] = None,
+        model: str | None = None,
         **kwargs,
     ) -> str:
         try:
@@ -55,9 +54,9 @@ class AnthropicAdapter(ModelProviderAdapter):
     async def score_quality(
         self,
         text: str,
-        context: Optional[str],
+        context: str | None,
         criteria: list[str],
-        model: Optional[str] = None,
+        model: str | None = None,
     ) -> tuple[dict[str, float], str]:
         user_msg = build_scoring_prompt(text, context, criteria)
         try:

@@ -9,7 +9,6 @@ Registers four handlers on the FastAPI app instance:
 """
 import logging
 import traceback
-from typing import Union
 
 from fastapi import FastAPI, Request, status
 from fastapi.exceptions import RequestValidationError
@@ -69,8 +68,7 @@ def register_exception_handlers(app: FastAPI) -> None:
 
     @app.exception_handler(Exception)
     async def handle_generic_error(request: Request, exc: Exception) -> JSONResponse:
-        logger.error("Unhandled exception: %s
-%s", exc, traceback.format_exc())
+        logger.error("Unhandled exception: %s\n%s", exc, traceback.format_exc())
         body = ErrorResponse(
             error="internal_server_error",
             message="An unexpected error occurred. Please try again later.",

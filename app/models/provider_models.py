@@ -1,19 +1,19 @@
 """
 Pydantic models for the /providers endpoints.
 """
-from typing import Literal, Optional
+from typing import Literal
 
 from pydantic import BaseModel, field_validator
 
-from app.models.request import MAX_TEXT_LENGTH, _validate_text, _validate_metrics
+from app.models.request import _validate_text, _validate_metrics
 
 
 class ProviderEvaluateRequest(BaseModel):
     """Request body for POST /api/v1/providers/evaluate."""
     text: str
-    context: Optional[str] = None
+    context: str | None = None
     provider: Literal["openai", "anthropic", "huggingface", "mock"] = "openai"
-    model: Optional[str] = None
+    model: str | None = None
     criteria: list[str] = ["coherence", "relevance", "fluency"]
 
     @field_validator("text")

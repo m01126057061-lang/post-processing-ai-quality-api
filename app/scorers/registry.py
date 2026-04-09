@@ -11,7 +11,6 @@ Available metrics:
   toxicity     — BERT-based safety score via detoxify
   hallucination— NLI-based groundedness score (requires context)
 """
-from typing import Dict, List
 
 from app.scorers.base import QualityScorer
 from app.scorers.coherence import CoherenceScorer
@@ -20,7 +19,7 @@ from app.scorers.hallucination import HallucinationScorer
 from app.scorers.relevance import RelevanceScorer
 from app.scorers.toxicity import ToxicityScorer
 
-_REGISTRY: Dict[str, QualityScorer] = {
+_REGISTRY: dict[str, QualityScorer] = {
     "coherence":     CoherenceScorer(),
     "relevance":     RelevanceScorer(),
     "fluency":       FluencyScorer(),
@@ -38,12 +37,12 @@ def get_scorer(name: str) -> QualityScorer:
     return _REGISTRY[name]
 
 
-def available_metrics() -> List[str]:
+def available_metrics() -> list[str]:
     """Return names of all registered metrics."""
     return list(_REGISTRY)
 
 
-def get_context_required_metrics() -> List[str]:
+def get_context_required_metrics() -> list[str]:
     """Return names of metrics that require a context string for meaningful scores."""
     return [name for name, scorer in _REGISTRY.items()
             if getattr(scorer, "requires_context", False)]

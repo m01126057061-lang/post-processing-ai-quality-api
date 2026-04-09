@@ -1,7 +1,6 @@
 """
 Response models for all API endpoints.
 """
-from typing import Optional
 
 from pydantic import BaseModel
 
@@ -27,7 +26,7 @@ class FilterItem(BaseModel):
     text: str
     scores: ScoreResult
     filtered: bool
-    filter_reason: Optional[str] = None
+    filter_reason: str | None = None
 
 
 class FilterSummary(BaseModel):
@@ -48,7 +47,7 @@ class PipelineTextResult(BaseModel):
     text: str
     scores: ScoreResult
     filtered: bool
-    filter_reason: Optional[str] = None
+    filter_reason: str | None = None
     step_outputs: list[dict]
 
 

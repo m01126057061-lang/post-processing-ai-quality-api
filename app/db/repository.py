@@ -11,8 +11,8 @@ import hashlib
 import json
 import logging
 import sqlite3
-from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional
+from datetime import datetime, UTC
+from typing import Any
 from uuid import uuid4
 
 from app.core.config import settings
@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 
 def _utcnow() -> str:
-    return datetime.now(timezone.utc).isoformat()
+    return datetime.now(UTC).isoformat()
 
 
 def _hash_text(text: str) -> str:
@@ -33,8 +33,8 @@ def _hash_text(text: str) -> str:
 
 def _save_sync(
     text: str,
-    metrics: List[str],
-    scores: Dict[str, float],
+    metrics: list[str],
+    scores: dict[str, float],
     weighted_score: float,
     context_provided: bool,
 ) -> str:
@@ -64,8 +64,8 @@ def _save_sync(
 def _list_sync(
     limit: int,
     offset: int,
-    metric: Optional[str],
-) -> List[Dict[str, Any]]:
+    metric: str | None,
+) -> list[dict[str, Any]]:
     conn = _get_conn()
     if metric:
         rows = conn.execute(
@@ -80,7 +80,7 @@ def _list_sync(
     return [dict(r) for r in rows]
 
 
-def _count_sync(metric: Optional[str]) -> int:
+def _count_sync(metric: str | None) -> int:
     conn = _get_conn()
     if metric:
         row = conn.execute(
@@ -96,11 +96,11 @@ def _count_sync(metric: Optional[str]) -> int:
 
 async def save_evaluation(
     text: str,
-    metrics: List[str],
-    scores: Dict[str, float],
+    metrics: list[str],
+    scores: dict[str, float],
     weighted_score: float,
     context_provided: bool = False,
-) -> Optional[str]:
+) -> str | None:
     """Persist an evaluation record. Returns the record ID, or None if audit disabled."""
     if not settings.audit_enabled:
         return None
@@ -117,8 +117,8 @@ async def save_evaluation(
 async def list_evaluations(
     limit: int = 50,
     offset: int = 0,
-    metric: Optional[str] = None,
-) -> Dict[str, Any]:
+    metric: str | None = None,
+) -> dict[str, Any]:
     """Return paginated evaluation records with total count."""
     if not settings.audit_enabled:
         return {"total": 0, "items": [], "audit_enabled": False}

@@ -2,7 +2,6 @@
 Application settings — all values can be overridden via environment variables
 or a .env file (loaded automatically by pydantic-settings).
 """
-from typing import Optional
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -26,15 +25,15 @@ class Settings(BaseSettings):
     embedding_cache_size: int = 512
 
     # ── OpenAI ───────────────────────────────────────────────────────────────
-    openai_api_key: Optional[str] = None
+    openai_api_key: str | None = None
     openai_default_model: str = "gpt-4o-mini"
 
     # ── Anthropic ─────────────────────────────────────────────────────────────
-    anthropic_api_key: Optional[str] = None
+    anthropic_api_key: str | None = None
     anthropic_default_model: str = "claude-3-haiku-20240307"
 
     # ── HuggingFace ───────────────────────────────────────────────────────────
-    huggingface_api_key: Optional[str] = None
+    huggingface_api_key: str | None = None
     huggingface_default_model: str = "mistralai/Mistral-7B-Instruct-v0.2"
 
     # ── Provider call settings ─────────────────────────────────────────────────
