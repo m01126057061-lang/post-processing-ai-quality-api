@@ -35,7 +35,7 @@ class TestEvaluateRequest:
 
     def test_unknown_metric_raises(self):
         with pytest.raises(ValidationError, match="Unknown metric"):
-            EvaluateRequest(text="Valid text.", metrics=["toxicity"])
+            EvaluateRequest(text="Valid text.", metrics=["nonexistent_metric"])
 
     def test_empty_metrics_raises(self):
         with pytest.raises(ValidationError, match="empty"):
