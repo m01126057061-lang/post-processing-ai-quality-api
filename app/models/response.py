@@ -1,11 +1,19 @@
-from pydantic import BaseModel
-from typing import Dict, Optional, Any
+"""
+Response models for all API endpoints.
+"""
+from typing import Optional
 
+from pydantic import BaseModel
+
+
+# ── Shared ─────────────────────────────────────────────────────────────────
 
 class ScoreResult(BaseModel):
     overall: float
-    breakdown: Dict[str, float]
+    breakdown: dict[str, float]
 
+
+# ── /evaluate ──────────────────────────────────────────────────────────────
 
 class EvaluateResponse(BaseModel):
     text: str
@@ -13,13 +21,45 @@ class EvaluateResponse(BaseModel):
     passed: bool
 
 
+# ── /filter ────────────────────────────────────────────────────────────────
+
+class FilterItem(BaseModel):
+    text: str
+    scores: ScoreResult
+    filtered: bool
+    filter_reason: Optional[str] = None
+
+
+class FilterSummary(BaseModel):
+    total: int
+    passed: int
+    filtered: int
+    pass_rate: float
+
+
 class FilterResponse(BaseModel):
-    text: Optional[str]
-    passed: bool
-    score: float
+    results: list[FilterItem]
+    summary: FilterSummary
+
+
+# ── /pipeline/run ──────────────────────────────────────────────────────────
+
+class PipelineTextResult(BaseModel):
+    text: str
+    scores: ScoreResult
+    filtered: bool
+    filter_reason: Optional[str] = None
+    step_outputs: list[dict]
+
+
+class PipelineSummary(BaseModel):
+    total: int
+    passed: int
+    filtered: int
+    pass_rate: float
+    steps_run: int
 
 
 class PipelineRunResponse(BaseModel):
-    output: Any
-    steps_completed: int
-    passed: bool
+    results: list[PipelineTextResult]
+    summary: PipelineSummary
