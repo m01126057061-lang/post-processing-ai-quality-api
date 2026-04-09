@@ -1,10 +1,9 @@
 """Unit tests for adapter implementations and the adapter registry."""
 import pytest
-from app.adapters.registry import get_adapter, list_providers
-
 from app.adapters.anthropic_adapter import AnthropicAdapter
 from app.adapters.mock_adapter import MockAdapter
 from app.adapters.openai_adapter import OpenAIAdapter
+from app.adapters.registry import get_adapter, list_providers
 from app.adapters.utils import parse_score_response
 from app.core.exceptions import ProviderNotAvailableError, UnknownProviderError
 
