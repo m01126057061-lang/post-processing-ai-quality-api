@@ -18,5 +18,8 @@ ignore = [
   "B008",  # function calls in default args (FastAPI DI pattern)
 ]
 
+[lint.isort]
+known-first-party = ["app"]
+
 [lint.per-file-ignores]
 "tests/**" = ["S101"]  # allow assert in tests
