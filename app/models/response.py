@@ -14,9 +14,11 @@ class ScoreResult(BaseModel):
 # ── /evaluate ──────────────────────────────────────────────────────────────
 
 class EvaluateResponse(BaseModel):
+    evaluation_id: str | None = None
     text: str
     scores: ScoreResult
     passed: bool
+    explanations: dict[str, str] | None = None
 
 
 # ── /filter ────────────────────────────────────────────────────────────────
