@@ -31,6 +31,15 @@ CREATE TABLE IF NOT EXISTS evaluations (
 );
 CREATE INDEX IF NOT EXISTS idx_evaluations_created_at ON evaluations (created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_evaluations_text_hash  ON evaluations (text_hash);
+
+CREATE TABLE IF NOT EXISTS feedback (
+    id             TEXT PRIMARY KEY,
+    evaluation_id  TEXT NOT NULL,
+    created_at     TEXT NOT NULL,
+    correct        INTEGER NOT NULL,
+    note           TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_feedback_evaluation_id ON feedback (evaluation_id);
 """
 
 
