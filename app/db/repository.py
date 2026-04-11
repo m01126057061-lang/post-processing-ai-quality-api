@@ -29,7 +29,7 @@ def _hash_text(text: str) -> str:
     return hashlib.sha256(text.encode()).hexdigest()[:16]
 
 
-# ── Sync helpers (run in executor) ──────────────────────────────────────────
+# ── Evaluation helpers ────────────────────────────────────────────────────────
 
 def _save_sync(
     text: str,
@@ -92,6 +92,27 @@ def _count_sync(metric: str | None) -> int:
     return row[0]
 
 
+# ── Feedback helpers ──────────────────────────────────────────────────────────
+
+def _save_feedback_sync(
+    evaluation_id: str,
+    correct: bool,
+    note: str | None,
+) -> dict[str, str]:
+    feedback_id = str(uuid4())
+    created_at = _utcnow()
+    conn = _get_conn()
+    conn.execute(
+        """
+        INSERT INTO feedback (id, evaluation_id, created_at, correct, note)
+        VALUES (?, ?, ?, ?, ?)
+        """,
+        (feedback_id, evaluation_id, created_at, int(correct), note),
+    )
+    conn.commit()
+    return {"feedback_id": feedback_id, "created_at": created_at}
+
+
 # ── Async wrappers ───────────────────────────────────────────────────────────
 
 async def save_evaluation(
@@ -130,3 +151,21 @@ async def list_evaluations(
     except sqlite3.Error as exc:
         logger.warning("Failed to list evaluations from audit DB: %s", exc)
         return {"total": 0, "items": [], "error": str(exc)}
+
+
+async def save_feedback(
+    evaluation_id: str,
+    correct: bool,
+    note: str | None,
+) -> dict[str, str] | None:
+    """Persist a feedback record. Returns a dict with feedback_id and created_at, or None if disabled."""
+    if not settings.audit_enabled:
+        return None
+    try:
+        loop = asyncio.get_event_loop()
+        return await loop.run_in_executor(
+            None, _save_feedback_sync, evaluation_id, correct, note
+        )
+    except sqlite3.Error as exc:
+        logger.warning("Failed to save feedback to audit DB: %s", exc)
+        return None
