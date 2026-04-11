@@ -71,3 +71,38 @@ def test_evaluate_unknown_metric_error():
 def test_evaluate_request_id_header():
     resp = client.post("/api/v1/evaluate", json={"text": "Test."})
     assert "x-request-id" in {k.lower() for k in resp.headers}
+
+
+# ── New fields (evaluation_id + explanations) ─────────────────────────────────
+
+def test_evaluate_returns_evaluation_id():
+    data = client.post("/api/v1/evaluate", json={"text": "A test sentence."}).json()
+    # evaluation_id is a UUID string when audit is enabled, None when disabled
+    assert "evaluation_id" in data
+    if data["evaluation_id"] is not None:
+        assert isinstance(data["evaluation_id"], str)
+        assert len(data["evaluation_id"]) == 36  # UUID4
+
+
+def test_evaluate_returns_explanations():
+    data = client.post("/api/v1/evaluate", json={
+        "text": "The report was clear and well-structured.",
+        "metrics": ["coherence", "fluency"],
+    }).json()
+    assert "explanations" in data
+    assert data["explanations"] is not None
+    assert "coherence" in data["explanations"]
+    assert "fluency" in data["explanations"]
+    # Explanations are non-empty strings
+    for key, val in data["explanations"].items():
+        assert isinstance(val, str) and len(val) > 0
+
+
+def test_evaluate_explanation_contains_band():
+    """Explanation string should contain a band label."""
+    data = client.post("/api/v1/evaluate", json={
+        "text": "Short sentence.",
+        "metrics": ["fluency"],
+    }).json()
+    explanation = data["explanations"]["fluency"]
+    assert any(band in explanation for band in ("high", "good", "moderate", "low", "very low"))
