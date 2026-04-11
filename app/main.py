@@ -5,8 +5,10 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from prometheus_fastapi_instrumentator import Instrumentator
 
 from app.api.v1.routes import evaluate, filter_route, health, pipeline, providers
+from app.api.v1.routes.feedback import router as feedback_router
 from app.api.v1.routes.history import router as history_router
 from app.core.config import settings
 from app.core.error_handlers import register_exception_handlers
@@ -41,8 +43,13 @@ app = FastAPI(
         {"name": "pipeline",  "description": "Multi-step post-processing pipelines."},
         {"name": "providers", "description": "LLM provider adapters (OpenAI, Anthropic, HuggingFace)."},
         {"name": "history",   "description": "Audit trail of past evaluations."},
+        {"name": "feedback",  "description": "Human feedback on evaluation results."},
+        {"name": "metrics",   "description": "Prometheus metrics scrape endpoint."},
     ],
 )
+
+# ── Prometheus instrumentation ───────────────────────────────────────────────
+Instrumentator().instrument(app).expose(app, endpoint="/metrics", tags=["metrics"])
 
 # ── Middleware (order matters: outermost applied last) ──────────────────────
 app.add_middleware(RateLimitMiddleware)
@@ -65,3 +72,4 @@ app.include_router(filter_route.router, prefix="/api/v1", tags=["filter"])
 app.include_router(pipeline.router,    prefix="/api/v1", tags=["pipeline"])
 app.include_router(providers.router,   prefix="/api/v1", tags=["providers"])
 app.include_router(history_router,     prefix="/api/v1", tags=["history"])
+app.include_router(feedback_router,    prefix="/api/v1", tags=["feedback"])
