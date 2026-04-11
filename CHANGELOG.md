@@ -7,6 +7,43 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ---
 
+## [1.2.0] — 2026-04-11
+
+### Added
+
+- **Prometheus `/metrics` endpoint** — `prometheus-fastapi-instrumentator` wired
+  into the app; exposes standard HTTP request counts, latency histograms, and
+  in-progress gauges.  Compatible with any Prometheus + Grafana setup.
+
+- **Scorer plugin system** — drop a `.py` file in `app/scorers/plugins/` and
+  any `QualityScorer` subclass is auto-discovered and registered at startup.
+  No core code changes needed.  `reload_plugins()` re-scans at runtime.
+
+- **Feedback endpoint** (`POST /api/v1/feedback`) — accepts `evaluation_id`,
+  `correct (bool)`, and an optional `note`; persists to a new `feedback` table
+  in the SQLite audit DB.  Lays the groundwork for future threshold recalibration
+  driven by real human corrections.
+
+- **`evaluation_id` in `/evaluate` response** — every `POST /api/v1/evaluate`
+  call now persists to the audit trail and returns its record UUID.  Pass this
+  ID to `/feedback` to link human corrections to specific evaluations.
+
+- **Per-metric explanations in `/evaluate` response** — new `explanations` field
+  (dict of metric → string) provides a human-readable, band-labelled description
+  of each score (e.g. `"0.43 (moderate) — some logical gaps between sentences"`).
+  `QualityScorer.explain()` default implementation is overridable in subclasses.
+
+### Changed
+
+- `POST /api/v1/evaluate` is now an `async def` endpoint (was `def`); scoring
+  logic is unchanged, but the DB save is non-blocking.
+- `EvaluateResponse` gains two optional fields: `evaluation_id` and `explanations`.
+- `app/db/connection.py` `_SCHEMA` extended with the `feedback` table and index.
+- `app/scorers/base.py` `QualityScorer` gains `explain(score)` default method
+  and `requires_context` class attribute (was only on `RelevanceScorer`).
+
+---
+
 ## [1.1.0] — 2026-04-09
 
 ### Added
