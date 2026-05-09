@@ -1,0 +1,3 @@
+## 2025-05-09 - Embedding Batching Over Sequential Inference
+**Learning:** In ML-heavy applications, model inference overhead is often the primary bottleneck. Sequential calls to `model.encode` (even with single-item caching) are significantly slower than a single batched call for the same number of items. For `CoherenceScorer`, which embeds individual sentences, batching is a massive win (~60%+ reduction in latency).
+**Action:** Always prefer batching model inference when dealing with lists of inputs. When implementing caching for batched operations, ensure the cache can be checked and updated in bulk to avoid falling back to sequential calls.
