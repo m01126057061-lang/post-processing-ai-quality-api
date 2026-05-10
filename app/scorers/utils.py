@@ -65,7 +65,7 @@ def embed(texts: list[str]) -> np.ndarray:
         # Batch inference for all missing texts
         embeddings = model.encode(missing_texts, convert_to_numpy=True, normalize_embeddings=True)
 
-        for idx, emb in zip(missing_indices, embeddings):
+        for idx, emb in zip(missing_indices, embeddings, strict=True):
             results[idx] = emb
             # Update cache
             txt = texts[idx]
