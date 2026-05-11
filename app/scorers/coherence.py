@@ -33,8 +33,10 @@ class CoherenceScorer(QualityScorer):
             return 1.0
 
         embeddings = embed(sentences)
-        similarities = [
-            norm_sim_to_score(float(np.dot(embeddings[i], embeddings[i + 1])))
-            for i in range(len(embeddings) - 1)
-        ]
+
+        # Vectorized dot product between adjacent sentence embeddings
+        # Since embeddings are already L2-normalised, dot product == cosine similarity.
+        dots = np.sum(embeddings[:-1] * embeddings[1:], axis=1)
+
+        similarities = [norm_sim_to_score(float(d)) for d in dots]
         return round(float(np.mean(similarities)), 4)

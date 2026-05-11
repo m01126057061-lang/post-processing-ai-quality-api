@@ -10,7 +10,7 @@ Example — app/scorers/plugins/brevity.py
 
 
     class BrevityScorer(QualityScorer):
-        """Scores texts higher when they are concise (10-50 words is ideal)."""
+        "Scores texts higher when they are concise (10-50 words is ideal)."
 
         name = "brevity"
         weight = 1.0

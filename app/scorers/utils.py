@@ -8,11 +8,13 @@ recomputing embeddings for repeated texts across batch requests.
 from __future__ import annotations
 
 import os
+from collections import OrderedDict
 from functools import lru_cache
 
 import numpy as np
 
 _CACHE_SIZE = int(os.getenv("EMBEDDING_CACHE_SIZE", "512"))
+_CACHE: OrderedDict[str, np.ndarray] = OrderedDict()
 
 
 @lru_cache(maxsize=1)
@@ -24,25 +26,55 @@ def get_embedding_model():
     return SentenceTransformer(settings.embedding_model)
 
 
-@lru_cache(maxsize=_CACHE_SIZE)
 def embed_one(text: str) -> np.ndarray:
-    """Embed a single string with LRU cache.
+    """Embed a single string with manual LRU cache."""
+    if text in _CACHE:
+        _CACHE.move_to_end(text)
+        return _CACHE[text]
 
-    Cache size is controlled by the EMBEDDING_CACHE_SIZE env variable (default 512).
-    This avoids redundant model inference for repeated texts in batch filter requests.
-    """
     model = get_embedding_model()
     result = model.encode([text], convert_to_numpy=True, normalize_embeddings=True)
-    return result[0]
+    emb = result[0]
+
+    _CACHE[text] = emb
+    _CACHE.move_to_end(text)
+    if len(_CACHE) > _CACHE_SIZE:
+        _CACHE.popitem(last=False)
+    return emb
 
 
 def embed(texts: list[str]) -> np.ndarray:
-    """Return L2-normalised embeddings for a list of strings.
+    """Return L2-normalised embeddings for a list of strings with batching and LRU cache.
 
-    Uses per-text LRU cache: cache hits skip model inference entirely.
-    Falls back to batch encode for new texts (uses individual cached calls).
+    Significantly faster than sequential embed_one calls by leveraging model batching
+    for all cache misses in a single request.
     """
-    return np.stack([embed_one(t) for t in texts])
+    results = [None] * len(texts)
+    missing_indices = []
+
+    for i, text in enumerate(texts):
+        if text in _CACHE:
+            _CACHE.move_to_end(text)
+            results[i] = _CACHE[text]
+        else:
+            missing_indices.append(i)
+
+    if missing_indices:
+        model = get_embedding_model()
+        missing_texts = [texts[i] for i in missing_indices]
+        # Batch inference for all missing texts
+        embeddings = model.encode(missing_texts, convert_to_numpy=True, normalize_embeddings=True)
+
+        for idx, emb in zip(missing_indices, embeddings, strict=True):
+            results[idx] = emb
+            # Update cache
+            txt = texts[idx]
+            _CACHE[txt] = emb
+            _CACHE.move_to_end(txt)
+            if len(_CACHE) > _CACHE_SIZE:
+                _CACHE.popitem(last=False)
+
+    return np.stack(results)  # type: ignore
 
 
 def cosine_similarity(a: np.ndarray, b: np.ndarray) -> float:

@@ -94,7 +94,7 @@ def test_evaluate_returns_explanations():
     assert "coherence" in data["explanations"]
     assert "fluency" in data["explanations"]
     # Explanations are non-empty strings
-    for key, val in data["explanations"].items():
+    for _key, val in data["explanations"].items():
         assert isinstance(val, str) and len(val) > 0
 
 
