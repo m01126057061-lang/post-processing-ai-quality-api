@@ -26,7 +26,7 @@ langdetect>=1.0.9
 textstat>=0.7.3
 
 # Observability
-prometheus-fastapi-instrumentator>=6.1.0
+prometheus-fastapi-instrumentator>=7.1.0
 
 # Testing
 pytest>=8.2.0
