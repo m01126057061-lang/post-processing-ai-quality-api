@@ -1,0 +1,794 @@
+openapi: 3.1.0
+info:
+  title: Post-Processing AI Quality API
+  description: 'Post-process AI-generated outputs: evaluate quality via configurable
+    scorers (coherence, relevance, fluency, toxicity, hallucination), filter below-threshold
+    outputs, run chainable multi-step pipelines, and compare results across LLM providers.'
+  version: 0.1.0
+paths:
+  /metrics:
+    get:
+      tags:
+      - metrics
+      summary: Metrics
+      description: Endpoint that serves Prometheus metrics.
+      operationId: metrics_metrics_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+  /health:
+    get:
+      tags:
+      - health
+      summary: Liveness probe
+      operationId: liveness_health_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                additionalProperties: true
+                type: object
+                title: Response Liveness Health Get
+  /health/ready:
+    get:
+      tags:
+      - health
+      summary: Readiness probe
+      operationId: readiness_health_ready_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+  /api/v1/evaluate:
+    post:
+      tags:
+      - evaluate
+      summary: Evaluate AI output quality
+      description: "Score an AI-generated text across one or more quality metrics.\n\
+        \n- **text**: the AI-generated output to evaluate\n- **context**: optional\
+        \ original prompt (required for relevance / hallucination scoring)\n- **metrics**:\
+        \ list of metric names (coherence, relevance, fluency, toxicity, hallucination)\n\
+        \nThe response includes:\n- **evaluation_id**: unique ID for this record \u2014\
+        \ use it with POST /feedback\n- **scores**: overall aggregate + per-metric\
+        \ breakdown\n- **passed**: true when overall >= DEFAULT_QUALITY_THRESHOLD\
+        \ (default 0.7)\n- **explanations**: human-readable description of each metric\
+        \ score"
+      operationId: evaluate_api_v1_evaluate_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EvaluateRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EvaluateResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/filter:
+    post:
+      tags:
+      - filter
+      summary: Filter AI outputs by quality threshold
+      description: 'Score each text across the requested metrics and return a pass/fail
+        split.
+
+
+        - **texts**: batch of AI-generated outputs
+
+        - **context**: optional shared prompt (improves relevance scoring)
+
+        - **metrics**: quality metrics to compute
+
+        - **threshold**: texts scoring below this are marked `filtered: true`'
+      operationId: filter_texts_api_v1_filter_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FilterRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FilterResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/pipeline/run:
+    post:
+      tags:
+      - pipeline
+      summary: Run a multi-step post-processing pipeline
+      description: "Execute an ordered list of pipeline steps over a batch of AI-generated\
+        \ texts.\n\n**Step types:**\n- `score`     \u2014 evaluate quality metrics\
+        \ (coherence, relevance, fluency)\n- `filter`    \u2014 remove texts whose\
+        \ overall score is below a threshold\n- `transform` \u2014 apply text transformations\
+        \ (strip, lowercase, truncate)\n\n**Example pipeline:**\n```json\n{\n  \"\
+        texts\": [\"Great answer!\", \"bad\"],\n  \"steps\": [\n    {\"type\": \"\
+        score\", \"metrics\": [\"fluency\", \"coherence\"]},\n    {\"type\": \"filter\"\
+        , \"threshold\": 0.5},\n    {\"type\": \"transform\", \"operation\": \"strip\"\
+        }\n  ]\n}\n```"
+      operationId: run_pipeline_endpoint_api_v1_pipeline_run_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PipelineRunRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PipelineRunResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/providers:
+    get:
+      tags:
+      - providers
+      - providers
+      summary: List all registered model providers
+      description: Returns every registered model provider adapter along with its
+        default model and whether it is currently available (API key configured).
+      operationId: get_providers_api_v1_providers_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProvidersListResponse'
+  /api/v1/providers/evaluate:
+    post:
+      tags:
+      - providers
+      - providers
+      summary: LLM-based quality evaluation
+      description: Use a configured model provider to evaluate the quality of AI-generated
+        text on one or more criteria. Returns per-criterion scores, an overall aggregate,
+        and the model's reasoning.
+      operationId: provider_evaluate_api_v1_providers_evaluate_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProviderEvaluateRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProviderEvaluateResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/history:
+    get:
+      tags:
+      - history
+      - history
+      summary: List past evaluation records
+      description: Returns paginated evaluation records from the audit trail. Requires
+        AUDIT_ENABLED=true (default). Filter by metric name using the `metric` query
+        parameter.
+      operationId: get_history_api_v1_history_get
+      parameters:
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 500
+          minimum: 1
+          description: Max records to return
+          default: 50
+          title: Limit
+        description: Max records to return
+      - name: offset
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+          description: Pagination offset
+          default: 0
+          title: Offset
+        description: Pagination offset
+      - name: metric
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          description: Filter by metric name (e.g. coherence)
+          title: Metric
+        description: Filter by metric name (e.g. coherence)
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/feedback:
+    post:
+      tags:
+      - feedback
+      - feedback
+      summary: Submit feedback on a past evaluation
+      description: Mark a previous /evaluate result as correct or incorrect. Requires
+        the evaluation_id from the /evaluate response. Stored feedback will be used
+        for future scorer recalibration.
+      operationId: submit_feedback_api_v1_feedback_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FeedbackRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeedbackResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+components:
+  schemas:
+    EvaluateRequest:
+      properties:
+        text:
+          type: string
+          minLength: 1
+          title: Text
+          description: The AI-generated text to evaluate.
+        context:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Context
+          description: Original prompt/context (used by relevance scorer).
+        metrics:
+          items:
+            type: string
+          type: array
+          title: Metrics
+          description: Quality metrics to compute.
+          default:
+          - coherence
+          - relevance
+          - fluency
+      type: object
+      required:
+      - text
+      title: EvaluateRequest
+    EvaluateResponse:
+      properties:
+        evaluation_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Evaluation Id
+        text:
+          type: string
+          title: Text
+        scores:
+          $ref: '#/components/schemas/ScoreResult'
+        passed:
+          type: boolean
+          title: Passed
+        explanations:
+          anyOf:
+          - additionalProperties:
+              type: string
+            type: object
+          - type: 'null'
+          title: Explanations
+      type: object
+      required:
+      - text
+      - scores
+      - passed
+      title: EvaluateResponse
+    FeedbackRequest:
+      properties:
+        evaluation_id:
+          type: string
+          title: Evaluation Id
+          description: The evaluation_id returned by a previous POST /api/v1/evaluate
+            call.
+        correct:
+          type: boolean
+          title: Correct
+          description: Whether the evaluation result agreed with human judgment. true
+            = the score/verdict was correct; false = it was wrong.
+        note:
+          anyOf:
+          - type: string
+            maxLength: 500
+          - type: 'null'
+          title: Note
+          description: Optional free-text correction or observation (max 500 chars).
+      type: object
+      required:
+      - evaluation_id
+      - correct
+      title: FeedbackRequest
+    FeedbackResponse:
+      properties:
+        feedback_id:
+          type: string
+          title: Feedback Id
+        evaluation_id:
+          type: string
+          title: Evaluation Id
+        correct:
+          type: boolean
+          title: Correct
+        note:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Note
+        created_at:
+          type: string
+          title: Created At
+        message:
+          type: string
+          title: Message
+      type: object
+      required:
+      - feedback_id
+      - evaluation_id
+      - correct
+      - note
+      - created_at
+      - message
+      title: FeedbackResponse
+    FilterItem:
+      properties:
+        text:
+          type: string
+          title: Text
+        scores:
+          $ref: '#/components/schemas/ScoreResult'
+        filtered:
+          type: boolean
+          title: Filtered
+        filter_reason:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Filter Reason
+      type: object
+      required:
+      - text
+      - scores
+      - filtered
+      title: FilterItem
+    FilterRequest:
+      properties:
+        texts:
+          items:
+            type: string
+          type: array
+          minItems: 1
+          title: Texts
+          description: Batch of AI-generated texts to filter.
+        context:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Context
+          description: Shared prompt/context for all texts.
+        metrics:
+          items:
+            type: string
+          type: array
+          title: Metrics
+          description: Metrics used to compute the aggregate quality score.
+          default:
+          - coherence
+          - relevance
+          - fluency
+        threshold:
+          type: number
+          maximum: 1.0
+          minimum: 0.0
+          title: Threshold
+          description: Texts with overall score below this value are filtered out.
+          default: 0.5
+      type: object
+      required:
+      - texts
+      title: FilterRequest
+    FilterResponse:
+      properties:
+        results:
+          items:
+            $ref: '#/components/schemas/FilterItem'
+          type: array
+          title: Results
+        summary:
+          $ref: '#/components/schemas/FilterSummary'
+      type: object
+      required:
+      - results
+      - summary
+      title: FilterResponse
+    FilterSummary:
+      properties:
+        total:
+          type: integer
+          title: Total
+        passed:
+          type: integer
+          title: Passed
+        filtered:
+          type: integer
+          title: Filtered
+        pass_rate:
+          type: number
+          title: Pass Rate
+      type: object
+      required:
+      - total
+      - passed
+      - filtered
+      - pass_rate
+      title: FilterSummary
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    PipelineRunRequest:
+      properties:
+        texts:
+          items:
+            type: string
+          type: array
+          minItems: 1
+          title: Texts
+          description: Input texts to process.
+        context:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Context
+          description: Shared prompt/context for all texts.
+        steps:
+          items:
+            $ref: '#/components/schemas/PipelineStepConfig'
+          type: array
+          minItems: 1
+          title: Steps
+          description: Ordered list of pipeline steps to execute.
+      type: object
+      required:
+      - texts
+      - steps
+      title: PipelineRunRequest
+    PipelineRunResponse:
+      properties:
+        results:
+          items:
+            $ref: '#/components/schemas/PipelineTextResult'
+          type: array
+          title: Results
+        summary:
+          $ref: '#/components/schemas/PipelineSummary'
+      type: object
+      required:
+      - results
+      - summary
+      title: PipelineRunResponse
+    PipelineStepConfig:
+      properties:
+        type:
+          type: string
+          enum:
+          - score
+          - filter
+          - transform
+          title: Type
+          description: 'Step type: score | filter | transform'
+        metrics:
+          items:
+            type: string
+          type: array
+          title: Metrics
+          description: Metrics to evaluate (used by score step).
+          default:
+          - coherence
+          - relevance
+          - fluency
+        threshold:
+          type: number
+          maximum: 1.0
+          minimum: 0.0
+          title: Threshold
+          description: Quality threshold (used by filter step).
+          default: 0.5
+        operation:
+          anyOf:
+          - type: string
+            enum:
+            - strip
+            - lowercase
+            - truncate
+          - type: 'null'
+          title: Operation
+          description: Text operation (used by transform step).
+        max_chars:
+          anyOf:
+          - type: integer
+            exclusiveMinimum: 0.0
+          - type: 'null'
+          title: Max Chars
+          description: Max character length for truncate operation.
+      type: object
+      required:
+      - type
+      title: PipelineStepConfig
+      description: Configuration for a single step in a pipeline.
+    PipelineSummary:
+      properties:
+        total:
+          type: integer
+          title: Total
+        passed:
+          type: integer
+          title: Passed
+        filtered:
+          type: integer
+          title: Filtered
+        pass_rate:
+          type: number
+          title: Pass Rate
+        steps_run:
+          type: integer
+          title: Steps Run
+      type: object
+      required:
+      - total
+      - passed
+      - filtered
+      - pass_rate
+      - steps_run
+      title: PipelineSummary
+    PipelineTextResult:
+      properties:
+        text:
+          type: string
+          title: Text
+        scores:
+          $ref: '#/components/schemas/ScoreResult'
+        filtered:
+          type: boolean
+          title: Filtered
+        filter_reason:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Filter Reason
+        step_outputs:
+          items:
+            additionalProperties: true
+            type: object
+          type: array
+          title: Step Outputs
+      type: object
+      required:
+      - text
+      - scores
+      - filtered
+      - step_outputs
+      title: PipelineTextResult
+    ProviderEvaluateRequest:
+      properties:
+        text:
+          type: string
+          title: Text
+        context:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Context
+        provider:
+          type: string
+          enum:
+          - openai
+          - anthropic
+          - huggingface
+          - mock
+          title: Provider
+          default: openai
+        model:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Model
+        criteria:
+          items:
+            type: string
+          type: array
+          title: Criteria
+          default:
+          - coherence
+          - relevance
+          - fluency
+      type: object
+      required:
+      - text
+      title: ProviderEvaluateRequest
+      description: Request body for POST /api/v1/providers/evaluate.
+    ProviderEvaluateResponse:
+      properties:
+        provider:
+          type: string
+          title: Provider
+        model:
+          type: string
+          title: Model
+        scores:
+          additionalProperties:
+            type: number
+          type: object
+          title: Scores
+        overall:
+          type: number
+          title: Overall
+        reasoning:
+          type: string
+          title: Reasoning
+        latency_ms:
+          type: number
+          title: Latency Ms
+      type: object
+      required:
+      - provider
+      - model
+      - scores
+      - overall
+      - reasoning
+      - latency_ms
+      title: ProviderEvaluateResponse
+      description: Response for POST /api/v1/providers/evaluate.
+    ProviderInfo:
+      properties:
+        provider:
+          type: string
+          title: Provider
+        default_model:
+          type: string
+          title: Default Model
+        available:
+          type: boolean
+          title: Available
+      type: object
+      required:
+      - provider
+      - default_model
+      - available
+      title: ProviderInfo
+      description: Single provider status entry.
+    ProvidersListResponse:
+      properties:
+        providers:
+          items:
+            $ref: '#/components/schemas/ProviderInfo'
+          type: array
+          title: Providers
+      type: object
+      required:
+      - providers
+      title: ProvidersListResponse
+      description: Response for GET /api/v1/providers.
+    ScoreResult:
+      properties:
+        overall:
+          type: number
+          title: Overall
+        breakdown:
+          additionalProperties:
+            type: number
+          type: object
+          title: Breakdown
+      type: object
+      required:
+      - overall
+      - breakdown
+      title: ScoreResult
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+tags:
+- name: health
+  description: Liveness and readiness probes.
+- name: evaluate
+  description: Single-text quality evaluation.
+- name: filter
+  description: Batch quality filtering.
+- name: pipeline
+  description: Multi-step post-processing pipelines.
+- name: providers
+  description: LLM provider adapters (OpenAI, Anthropic, HuggingFace).
+- name: history
+  description: Audit trail of past evaluations.
+- name: feedback
+  description: Human feedback on evaluation results.
+- name: metrics
+  description: Prometheus metrics scrape endpoint.
