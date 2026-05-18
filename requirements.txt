@@ -23,7 +23,7 @@ detoxify>=0.3.0
 
 # Multi-language support + readability
 langdetect>=1.0.9
-textstat>=0.7.3
+textstat>=0.7.13
 
 # Observability
 prometheus-fastapi-instrumentator>=7.1.0
