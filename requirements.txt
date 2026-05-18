@@ -7,7 +7,7 @@ pydantic>=2.7.0
 pydantic-settings>=2.2.0
 
 # Embedding-based scorers (coherence, relevance, hallucination NLI)
-sentence-transformers>=2.7.0
+sentence-transformers>=5.5.0
 torch>=2.2.0
 
 # HTTP client (TestClient)
