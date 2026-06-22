@@ -19,7 +19,7 @@ jobs:
       packages: write
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       # Free up ~20 GB of runner disk space before building the ML-heavy image
       - name: Free disk space
